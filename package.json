@@ -1,0 +1,76 @@
+{
+  "name": "storyblok-dev-tools",
+  "version": "1.0.1",
+  "description": "Advanced developer tools overlay for Storyblok CMS in Next.js applications",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "require": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    },
+    "./components/*": {
+      "import": "./dist/components/*.js",
+      "require": "./dist/components/*.js",
+      "types": "./dist/components/*.d.ts"
+    },
+    "./styles": "./dist/globals.css"
+  },
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "typecheck": "tsc --noEmit",
+    "build:package": "rm -rf dist && tsc --project tsconfig.build.json && cp app/globals.css dist/",
+    "prepublishOnly": "npm run build:package"
+  },
+  "keywords": [
+    "storyblok",
+    "cms",
+    "nextjs",
+    "developer-tools",
+    "devtools",
+    "debug",
+    "overlay",
+    "inspector"
+  ],
+  "author": "Your Name",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/your-username/storyblok-dev-tools.git"
+  },
+  "bugs": {
+    "url": "https://github.com/your-username/storyblok-dev-tools/issues"
+  },
+  "homepage": "https://github.com/your-username/storyblok-dev-tools#readme",
+  "peerDependencies": {
+    "react": ">=18.2.0 <20",
+    "next": "^13.5.0 || ^14.0.0 || ^15.0.0",
+    "react-dom": "^18.2.0"
+  },
+  "dependencies": {
+    "@storyblok/react": "^5.4.13",
+    "clsx": "^2.1.1",
+    "lucide-react": "^0.446.0",
+    "tailwind-merge": "^2.5.2"
+  },
+  "devDependencies": {
+    "@types/node": "20.6.2",
+    "@types/react": "18.2.22",
+    "@types/react-dom": "18.2.7",
+    "autoprefixer": "10.4.15",
+    "eslint": "8.49.0",
+    "eslint-config-next": "13.5.1",
+    "postcss": "8.4.30",
+    "tailwindcss": "3.3.3",
+    "typescript": "5.2.2"
+  }
+}
