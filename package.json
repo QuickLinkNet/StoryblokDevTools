@@ -1,6 +1,6 @@
 {
   "name": "storyblok-dev-tools",
-  "version": "1.0.5",
+  "version": "1.0.6",
   "description": "Advanced developer tools overlay for Storyblok CMS in Next.js applications",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -20,7 +20,7 @@
       "require": "./dist/components/*.js",
       "types": "./dist/components/*.d.ts"
     },
-    "./styles": "./dist/globals.css"
+    "./styles": "./dist/styles.css"
   },
   "scripts": {
     "dev": "next dev",
@@ -28,7 +28,7 @@
     "start": "next start",
     "lint": "next lint",
     "typecheck": "tsc --noEmit",
-    "build:package": "rm -rf dist && tsc --project tsconfig.build.json && cp app/globals.css dist/",
+    "build:package": "rm -rf dist && tsc --project tsconfig.build.json && cp lib/styles.css dist/",
     "prepublishOnly": "npm run build:package"
   },
   "keywords": [
