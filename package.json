@@ -1,6 +1,6 @@
 {
   "name": "storyblok-dev-tools",
-  "version": "1.0.9",
+  "version": "1.0.10",
   "description": "Advanced developer tools overlay for Storyblok CMS in Next.js applications",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -14,11 +14,6 @@
       "import": "./dist/index.js",
       "require": "./dist/index.js",
       "types": "./dist/index.d.ts"
-    },
-    "./components/*": {
-      "import": "./dist/components/*.js",
-      "require": "./dist/components/*.js",
-      "types": "./dist/components/*.d.ts"
     }
   },
   "scripts": {
@@ -40,16 +35,16 @@
     "overlay",
     "inspector"
   ],
-  "author": "Your Name",
+  "author": "QuickLink",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/your-username/storyblok-dev-tools.git"
+    "url": "https://github.com/QuickLinkNet/StoryblokDevTools.git"
   },
   "bugs": {
-    "url": "https://github.com/your-username/storyblok-dev-tools/issues"
+    "url": "https://github.com/QuickLinkNet/StoryblokDevTools/issues"
   },
-  "homepage": "https://github.com/your-username/storyblok-dev-tools#readme",
+  "homepage": "https://github.com/QuickLinkNet/StoryblokDevTools",
   "peerDependencies": {
     "react": ">=18.2.0 <20",
     "next": "^13.5.0 || ^14.0.0 || ^15.0.0",
@@ -58,7 +53,6 @@
   },
   "dependencies": {
     "@storyblok/react": "^5.4.13",
-    "@tailwindcss/postcss": "^4.1.14",
     "clsx": "^2.1.1",
     "lucide-react": "^0.446.0",
     "tailwind-merge": "^2.5.2"
