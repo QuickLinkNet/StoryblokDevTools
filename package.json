@@ -1,6 +1,6 @@
 {
   "name": "storyblok-dev-tools",
-  "version": "1.0.13",
+  "version": "1.0.11",
   "description": "Advanced developer tools overlay for Storyblok CMS in Next.js applications",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -17,12 +17,13 @@
     }
   },
   "scripts": {
-    "dev": "next dev",
+    "dev": "npm run build:tailwind && next dev",
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
     "typecheck": "tsc --noEmit",
-    "build:package": "rm -rf dist && tsc --project tsconfig.build.json && cp components/storyblok/StoryblokDevTools.css dist/components/storyblok/",
+    "build:tailwind": "npx tailwindcss -i ./components/storyblok/tailwind-devtools.css -o ./components/storyblok/tailwind-compiled.css --minify && node scripts/embed-tailwind.js",
+    "build:package": "npm run build:tailwind && rm -rf dist && tsc --project tsconfig.build.json",
     "prepublishOnly": "npm run build:package"
   },
   "keywords": [
@@ -46,8 +47,8 @@
   },
   "homepage": "https://github.com/QuickLinkNet/StoryblokDevTools",
   "peerDependencies": {
-    "react": ">=18.2.0 <20",
     "next": "^13.5.0 || ^14.0.0 || ^15.0.0",
+    "react": ">=18.2.0 <20",
     "react-dom": ">=18.2.0 <20"
   },
   "dependencies": {
@@ -61,8 +62,11 @@
     "autoprefixer": "10.4.15",
     "eslint": "8.49.0",
     "eslint-config-next": "13.5.1",
+    "next": "14.2.13",
     "postcss": "8.4.30",
-    "tailwindcss": "4.0.0",
+    "react": "18.2.0",
+    "react-dom": "18.2.0",
+    "tailwindcss": "^3.4.1",
     "typescript": "5.2.2"
   }
 }
