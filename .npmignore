@@ -1,0 +1,35 @@
+# Source files (not needed in package)
+app/
+components/
+lib/
+.next/
+out/
+node_modules/
+
+# Development files
+.env
+.env.local
+.env.example
+.eslintrc.json
+tsconfig.json
+tsconfig.build.json
+next.config.js
+next-env.d.ts
+postcss.config.js
+tailwind.config.ts
+components.json
+index.ts
+
+# Documentation (except README)
+.bolt/
+
+# Build artifacts
+*.log
+*.tsbuildinfo
+.DS_Store
+
+# Git
+.git
+.gitignore
+
+# Only include: dist/, README.md, LICENSE, package.json, docs/

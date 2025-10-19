@@ -1,0 +1,39 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "outDir": "./dist",
+    "declaration": true,
+    "declarationMap": true,
+    "noEmit": false,
+    "module": "esnext",
+    "moduleResolution": "node",
+    "target": "es2015",
+    "jsx": "react-jsx",
+    "skipLibCheck": true,
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "strict": true,
+    "resolveJsonModule": true,
+    "isolatedModules": true
+  },
+  "include": [
+    "components/storyblok/StoryblokDevTools.tsx",
+    "components/storyblok/StoryblokOverlay.tsx",
+    "components/storyblok/OverlayToggle.tsx",
+    "components/storyblok/tabs/**/*",
+    "components/storyblok/components/**/*",
+    "lib/utils.ts",
+    "index.ts"
+  ],
+  "exclude": [
+    "node_modules",
+    "dist",
+    "app",
+    ".next",
+    "out",
+    "**/*.test.ts",
+    "**/*.test.tsx",
+    "**/*.spec.ts",
+    "**/*.spec.tsx"
+  ]
+}

@@ -1,0 +1,139 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Custom animations and utilities for Shadow DOM */
+@layer utilities {
+  /* Scrollbar styles */
+  .sb-scrollbar::-webkit-scrollbar {
+    width: 8px;
+    height: 4px;
+  }
+
+  .sb-scrollbar::-webkit-scrollbar-track {
+    background: #0f172a;
+  }
+
+  .sb-scrollbar::-webkit-scrollbar-thumb {
+    background: #334155;
+    border-radius: 4px;
+  }
+
+  .sb-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: #475569;
+  }
+
+  /* Animations */
+  @keyframes sb-slide-in {
+    from {
+      transform: translateX(100%);
+      opacity: 0;
+    }
+    to {
+      transform: translateX(0);
+      opacity: 1;
+    }
+  }
+
+  @keyframes sb-fade-in {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+
+  @keyframes sb-pulse {
+    0%, 100% {
+      opacity: 1;
+    }
+    50% {
+      opacity: 0.7;
+    }
+  }
+
+  .animate-sb-slide-in {
+    animation: sb-slide-in 0.3s ease-out;
+  }
+
+  .animate-sb-fade-in {
+    animation: sb-fade-in 0.2s ease-out;
+  }
+
+  .animate-sb-pulse {
+    animation: sb-pulse 2s ease-in-out infinite;
+  }
+
+  /* Glow effect */
+  .shadow-sb-glow {
+    box-shadow: 0 0 20px rgba(6, 182, 212, 0.3);
+  }
+
+  /* ===== Custom Responsive Utilities for Shadow DOM ===== */
+  /* Grid: 2 -> 3 -> 4 Spalten */
+  .sb-grid-2-3-4 {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  @media (min-width: 768px) {
+    .sb-grid-2-3-4 {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+  }
+  @media (min-width: 1024px) {
+    .sb-grid-2-3-4 {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+  }
+
+  /* Grid: 1 -> 2 -> 3 Spalten */
+  .sb-grid-1-2-3 {
+    display: grid;
+    grid-template-columns: repeat(1, minmax(0, 1fr));
+  }
+  @media (min-width: 768px) {
+    .sb-grid-1-2-3 {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+  @media (min-width: 1024px) {
+    .sb-grid-1-2-3 {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+  }
+
+  /* Grid: 2 -> 3 -> 6 Spalten */
+  .sb-grid-2-3-6 {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.75rem; /* gap-3 */
+  }
+
+  @media (min-width: 640px) { /* sm */
+    .sb-grid-2-3-6 {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+  }
+
+  @media (min-width: 1280px) { /* xl */
+    .sb-grid-2-3-6 {
+      grid-template-columns: repeat(6, minmax(0, 1fr));
+    }
+  }
+
+  /* Gap helper für alle Grids */
+  .sb-grid-gap {
+    gap: 0.75rem; /* = gap-3 */
+  }
+}
+
+/* ===== Global Retina Scale Fix ===== */
+@media only screen and (min-resolution: 2dppx),
+only screen and (min--moz-device-pixel-ratio: 2),
+only screen and (-webkit-min-device-pixel-ratio: 2) {
+
+  :host, .sb-root {
+    zoom: 1.5;
+  }
+}

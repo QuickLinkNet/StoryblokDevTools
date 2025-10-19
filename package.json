@@ -53,8 +53,7 @@
   },
   "dependencies": {
     "@storyblok/react": "^5.4.13",
-    "lucide-react": "^0.446.0",
-    "storyblok-dev-tools": "^1.0.28"
+    "lucide-react": "^0.446.0"
   },
   "devDependencies": {
     "@types/node": "20.6.2",
