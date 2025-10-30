@@ -1,5 +1,5 @@
-import fs from "fs";
-import path from "path";
+const fs = require("fs");
+const path = require("path");
 
 const cssPath = path.resolve("components/storyblok/tailwind-compiled.css");
 const outPath = path.resolve("components/storyblok/tailwind-css.ts");

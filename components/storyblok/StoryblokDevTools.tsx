@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { createRoot, Root } from "react-dom/client";
 import { StoryblokOverlay } from "./StoryblokOverlay";
 import { OverlayToggle } from "./OverlayToggle";
@@ -18,6 +18,13 @@ interface StoryData {
   };
 }
 
+interface StorySummary {
+  id: number;
+  name: string;
+  uuid: string;
+  fullSlug: string;
+}
+
 interface StoryblokDevToolsProps {
   slug?: string;
   version?: "draft" | "published";
@@ -25,6 +32,9 @@ interface StoryblokDevToolsProps {
   initialOpen?: boolean;
   accessToken?: string;
 }
+
+const STORY_LIST_CACHE_KEY = "storyblokDevTools::storyList";
+const STORY_LIST_CACHE_TTL = 24 * 60 * 60 * 1000; // 24 hours
 
 export function StoryblokDevTools({
                                     slug,
@@ -37,6 +47,12 @@ export function StoryblokDevTools({
   const [overlayOpen, setOverlayOpen] = useState(initialOpen);
   const [mounted, setMounted] = useState(false);
   const [slugReady, setSlugReady] = useState<string | null>(null);
+  const [stories, setStories] = useState<StorySummary[]>([]);
+  const [storiesLoading, setStoriesLoading] = useState(false);
+  const [storiesError, setStoriesError] = useState<string | null>(null);
+  const [storiesFetchedAt, setStoriesFetchedAt] = useState<number | null>(null);
+  const [storyLoading, setStoryLoading] = useState(false);
+  const [storyError, setStoryError] = useState<string | null>(null);
 
   const [locales, setLocales] = useState<string[]>(["default"]); // alle verfügbaren Locales
   const [currentLocale, setCurrentLocale] = useState<string>("default"); // aktive Locale
@@ -44,11 +60,24 @@ export function StoryblokDevTools({
   const hostRef = useRef<HTMLDivElement>(null);
   const shadowRef = useRef<ShadowRoot | null>(null);
   const reactRootRef = useRef<Root | null>(null);
+  const isMountedRef = useRef(false);
 
   // Mounted setzen
   useEffect(() => {
     setMounted(true);
+    isMountedRef.current = true;
+    return () => {
+      isMountedRef.current = false;
+    };
   }, []);
+
+  useEffect(() => {
+    if (storyData) {
+      setStory(storyData);
+      setStoryError(null);
+      setStoryLoading(false);
+    }
+  }, [storyData]);
 
   // Slug ermitteln
   useEffect(() => {
@@ -68,44 +97,269 @@ export function StoryblokDevTools({
   const finalToken =
       accessToken || process.env.NEXT_PUBLIC_STORYBLOK_ACCESS_TOKEN || "";
 
-  // Locales + Story fetchen
-  useEffect(() => {
-    if (!slugReady || storyData || !finalToken) return;
+  const fetchAndCacheStories = useCallback(
+      async (forceRefresh: boolean = false) => {
+        if (!mounted || !finalToken) {
+          return;
+        }
 
-    const fetchLocalesAndStory = async () => {
+        if (typeof window === "undefined") {
+          return;
+        }
+
+        const now = Date.now();
+
+        if (!forceRefresh) {
+          const cachedRaw = window.localStorage.getItem(STORY_LIST_CACHE_KEY);
+          if (cachedRaw) {
+            try {
+              const cached = JSON.parse(cachedRaw);
+              if (
+                  cached &&
+                  Array.isArray(cached.stories) &&
+                  typeof cached.timestamp === "number" &&
+                  now - cached.timestamp < STORY_LIST_CACHE_TTL
+              ) {
+                setStories(cached.stories);
+                setStoriesFetchedAt(cached.timestamp);
+                setStoriesError(null);
+                return;
+              }
+            } catch (error) {
+              console.warn("Failed to parse Storyblok story cache", error);
+            }
+          }
+        }
+
+        setStoriesLoading(true);
+        setStoriesError(null);
+
+        try {
+          const perPage = 100;
+          let page = 1;
+          let total = Infinity;
+          const aggregated: StorySummary[] = [];
+
+          while (aggregated.length < total) {
+            const storiesUrl = `https://api.storyblok.com/v2/cdn/stories?token=${finalToken}&version=draft&per_page=${perPage}&page=${page}`;
+            const response = await fetch(storiesUrl);
+
+            if (!response.ok) {
+              throw new Error(`Failed to load stories (${response.status})`);
+            }
+
+            const data = await response.json();
+            const pageStories = Array.isArray(data?.stories) ? data.stories : [];
+
+            const filtered = pageStories
+                .filter((item: any) => !item.is_folder)
+                .map(
+                    (item: any): StorySummary => ({
+                      id: item.id,
+                      name: item.name || item.slug || "Untitled Story",
+                      uuid: item.uuid,
+                      fullSlug: item.full_slug || item.slug || "",
+                    })
+                )
+                .filter((item: StorySummary) => Boolean(item.fullSlug));
+
+            aggregated.push(...filtered);
+
+            const totalHeader = response.headers.get("total");
+            if (totalHeader) {
+              const parsedTotal = Number(totalHeader);
+              if (!Number.isNaN(parsedTotal) && parsedTotal > 0) {
+                total = parsedTotal;
+              }
+            }
+
+            if (!pageStories.length || pageStories.length < perPage) {
+              break;
+            }
+
+            page += 1;
+          }
+
+          const uniqueStories = Array.from(
+              new Map(aggregated.map((story) => [story.fullSlug, story])).values()
+          ).sort((a, b) =>
+              a.name.localeCompare(b.name, undefined, {
+                sensitivity: "base",
+              })
+          );
+
+          if (!isMountedRef.current) {
+            return;
+          }
+
+          const fetchedAt = Date.now();
+
+          setStories(uniqueStories);
+          setStoriesFetchedAt(fetchedAt);
+          setStoriesError(null);
+
+          try {
+            window.localStorage.setItem(
+                STORY_LIST_CACHE_KEY,
+                JSON.stringify({
+                  timestamp: fetchedAt,
+                  stories: uniqueStories,
+                })
+            );
+          } catch (storageError) {
+            console.warn("Failed to store Storyblok story cache", storageError);
+          }
+        } catch (error: any) {
+          if (!isMountedRef.current) {
+            return;
+          }
+          setStoriesError(error?.message || "Unable to load stories");
+          setStories([]);
+          setStoriesFetchedAt(null);
+          try {
+            window.localStorage.removeItem(STORY_LIST_CACHE_KEY);
+          } catch {
+            // ignore
+          }
+        } finally {
+          if (isMountedRef.current) {
+            setStoriesLoading(false);
+          }
+        }
+      },
+      [finalToken, mounted]
+  );
+
+  useEffect(() => {
+    if (!mounted || !finalToken) return;
+    fetchAndCacheStories();
+  }, [mounted, finalToken, fetchAndCacheStories]);
+
+  useEffect(() => {
+    if (!mounted) return;
+    if (!finalToken) {
+      setStories([]);
+      setStoriesFetchedAt(null);
+      setStoriesError(null);
+      setStoriesLoading(false);
+    }
+  }, [mounted, finalToken]);
+
+  const handleInvalidateStoryCache = useCallback(() => {
+    if (typeof window !== "undefined") {
       try {
-        // 1. Locales abholen
+        window.localStorage.removeItem(STORY_LIST_CACHE_KEY);
+      } catch {
+        // ignore removal failure
+      }
+    }
+    fetchAndCacheStories(true);
+  }, [fetchAndCacheStories]);
+
+  const handleStorySelect = useCallback(
+      (newSlug: string) => {
+        if (!newSlug || newSlug === slugReady) {
+          return;
+        }
+        setStoryError(null);
+        setSlugReady(newSlug);
+      },
+      [slugReady]
+  );
+
+  // Locales laden
+  useEffect(() => {
+    if (!mounted || !finalToken) return;
+
+    const fetchLocales = async () => {
+      try {
         const spaceUrl = `https://api.storyblok.com/v2/cdn/spaces/me?token=${finalToken}`;
         const resSpace = await fetch(spaceUrl);
         const dataSpace = await resSpace.json();
 
-        if (dataSpace.space?.language_codes) {
-          // "default" immer ergänzen
+        if (Array.isArray(dataSpace?.space?.language_codes)) {
           setLocales(["default", ...dataSpace.space.language_codes]);
         } else {
           setLocales(["default"]);
         }
-
-        // 2. Story in aktueller Locale holen
-        const storyUrl =
-            `https://api.storyblok.com/v2/cdn/stories/${slugReady}?version=${version}&token=${finalToken}` +
-            (currentLocale !== "default" ? `&language=${currentLocale}` : "");
-
-        const resStory = await fetch(storyUrl);
-        const dataStory = await resStory.json();
-
-        if (dataStory.story) {
-          setStory(dataStory);
-        } else {
-          console.error("Story not found", dataStory);
-        }
       } catch (err) {
-        console.error("Failed to fetch locales/story", err);
+        console.error("Failed to fetch Storyblok locales", err);
+        setLocales(["default"]);
       }
     };
 
-    fetchLocalesAndStory();
-  }, [slugReady, version, storyData, finalToken, currentLocale]);
+    fetchLocales();
+  }, [mounted, finalToken]);
+
+  useEffect(() => {
+    if (!slugReady) return;
+    setCurrentLocale("default");
+  }, [slugReady]);
+
+  // Story für aktiven Slug laden
+  useEffect(() => {
+    if (!slugReady || !finalToken) return;
+
+    if (
+        storyData &&
+        storyData.story?.full_slug === slugReady &&
+        currentLocale === "default"
+    ) {
+      setStory(storyData);
+      setStoryLoading(false);
+      setStoryError(null);
+      return;
+    }
+
+    const controller = new AbortController();
+    const storyUrl =
+        `https://api.storyblok.com/v2/cdn/stories/${slugReady}?version=${version}&token=${finalToken}` +
+        (currentLocale !== "default" ? `&language=${currentLocale}` : "");
+
+    setStoryLoading(true);
+    setStoryError(null);
+
+    const fetchStory = async () => {
+      try {
+        const resStory = await fetch(storyUrl, { signal: controller.signal });
+
+        if (!resStory.ok) {
+          throw new Error(`Failed to load story (${resStory.status})`);
+        }
+
+        const dataStory = await resStory.json();
+
+        if (controller.signal.aborted || !isMountedRef.current) {
+          return;
+        }
+
+        if (dataStory?.story) {
+          setStory(dataStory);
+          setStoryError(null);
+        } else {
+          setStoryError("Story not found");
+          setStory(null);
+        }
+      } catch (err: any) {
+        if (controller.signal.aborted || !isMountedRef.current) {
+          return;
+        }
+        console.error("Failed to fetch Storyblok story", err);
+        setStoryError(err?.message || "Failed to load story");
+        setStory(null);
+      } finally {
+        if (!controller.signal.aborted && isMountedRef.current) {
+          setStoryLoading(false);
+        }
+      }
+    };
+
+    fetchStory();
+
+    return () => {
+      controller.abort();
+    };
+  }, [slugReady, version, finalToken, currentLocale, storyData]);
 
   // Keyboard Shortcut
   useEffect(() => {
@@ -146,22 +400,46 @@ export function StoryblokDevTools({
             {/* Toggle-Button */}
             <OverlayToggle onClick={() => setOverlayOpen(true)} />
 
-            {/* Overlay nur, wenn Story da */}
-            {story && (
+            {/* Overlay nur, wenn Story verfügbar oder aktuell geladen */}
+            {(story || storyLoading) && (
                 <StoryblokOverlay
                     story={story}
                     isOpen={overlayOpen}
                     onClose={() => setOverlayOpen(false)}
                     accessToken={finalToken}
-                    locales={locales}                  // NEW
-                    currentLocale={currentLocale}      // NEW
-                    onLocaleChange={setCurrentLocale}  // NEW
+                    locales={locales}
+                    currentLocale={currentLocale}
+                    onLocaleChange={setCurrentLocale}
+                    stories={stories}
+                    storiesLoading={storiesLoading}
+                    storiesError={storiesError}
+                    selectedStorySlug={slugReady || ""}
+                    onSelectStory={handleStorySelect}
+                    onInvalidateStoryCache={handleInvalidateStoryCache}
+                    storyLoading={storyLoading}
+                    storyError={storyError}
+                    storiesFetchedAt={storiesFetchedAt}
                 />
             )}
           </>
       );
     }
-  }, [story, overlayOpen, finalToken, locales, currentLocale]);
+  }, [
+    story,
+    storyLoading,
+    overlayOpen,
+    finalToken,
+    locales,
+    currentLocale,
+    stories,
+    storiesLoading,
+    storiesError,
+    slugReady,
+    handleStorySelect,
+    handleInvalidateStoryCache,
+    storyError,
+    storiesFetchedAt,
+  ]);
 
   // Wichtig: NICHTS außerhalb vom Shadow Root rendern
   return <div ref={hostRef} />;

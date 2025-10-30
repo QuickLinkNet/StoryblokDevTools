@@ -137,3 +137,25 @@ only screen and (-webkit-min-device-pixel-ratio: 2) {
     zoom: 1.5;
   }
 }
+
+.story-selector-trigger {
+  width: 230px;
+  min-width: 230px;
+}
+
+@media (min-width: 640px) {
+  .story-selector-trigger {
+    width: 260px;
+  }
+}
+
+.story-selector-panel {
+  width: 260px;
+  min-width: 260px;
+}
+
+@media (min-width: 640px) {
+  .story-selector-panel {
+    width: 300px;
+  }
+}
