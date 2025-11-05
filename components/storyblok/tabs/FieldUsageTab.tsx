@@ -7,16 +7,11 @@ import {
   TrendingUp,
   Copy,
   ChevronDown,
-  ChevronUp, Search
+  ChevronUp,
+  Search,
 } from "lucide-react";
 import { useState } from "react";
-
-interface FieldAnalysis {
-  path: string;
-  value: any;
-  isEmpty: boolean;
-  type: string;
-}
+import type { FieldAnalysis } from "../types";
 
 export function FieldUsageTab({ story, onCopy, copiedText }: any) {
   const [showEmpty, setShowEmpty] = useState(true);

@@ -2,10 +2,7 @@
 
 import { useState } from "react";
 import { Code as Code2 } from "lucide-react";
-
-interface OverlayToggleProps {
-    onClick: () => void;
-}
+import type { OverlayToggleProps } from "./types";
 
 export function OverlayToggle({ onClick }: OverlayToggleProps) {
     const [isHovered, setIsHovered] = useState(false);
@@ -29,7 +26,7 @@ export function OverlayToggle({ onClick }: OverlayToggleProps) {
         active:scale-95
         group
         border border-white border-opacity-20
-        z-[2147483647]
+        z-999998
       "
             aria-label="Toggle Storyblok Developer Tools"
         >

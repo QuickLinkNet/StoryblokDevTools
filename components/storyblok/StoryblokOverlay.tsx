@@ -10,6 +10,7 @@ import {
   TrendingUp,
   Zap,
   Globe,
+  GitBranch,
   Loader2,
   AlertCircle,
 } from "lucide-react";
@@ -22,13 +23,18 @@ import { FieldUsageTab } from "./tabs/FieldUsageTab";
 import { QuickActionsTab } from "./tabs/QuickActionsTab";
 import { SeoTab } from "./tabs/SeoTab";
 import { JsonTab } from "./tabs/JsonTab";
-import type { StorySelectorOption } from "./StorySelector";
+import { RelationsTab } from "./tabs/RelationsTab";
 import { StoryblokOverlayHeader } from "./StoryblokOverlayHeader";
 import { StoryblokOverlayTabs } from "./StoryblokOverlayTabs";
 import type {
+  StoryblokOverlayAlertProps,
+  StoryblokOverlayAlertVariant,
+  StoryblokOverlayAlertsProps,
+  StoryblokOverlayProps,
   StoryblokOverlayTab,
   StoryblokOverlayTabId,
-} from "./StoryblokOverlayTabs";
+  StorySelectorOption,
+} from "./types";
 
 const OVERLAY_TABS = [
   { id: "info", label: "Info", icon: FileCode },
@@ -39,27 +45,9 @@ const OVERLAY_TABS = [
   { id: "fields", label: "Fields", icon: TrendingUp },
   { id: "actions", label: "Actions", icon: Zap },
   { id: "seo", label: "SEO", icon: Globe },
+  { id: "relations", label: "Relations", icon: GitBranch },
   { id: "json", label: "JSON", icon: FileCode },
 ] as const satisfies ReadonlyArray<StoryblokOverlayTab>;
-
-interface StoryblokOverlayProps {
-  story: any | null;
-  isOpen?: boolean;
-  onClose?: () => void;
-  accessToken?: string;
-  locales?: string[];
-  currentLocale?: string;
-  onLocaleChange?: (locale: string) => void;
-  stories?: StorySelectorOption[];
-  storiesLoading?: boolean;
-  storiesError?: string | null;
-  selectedStorySlug?: string;
-  onSelectStory?: (slug: string) => void;
-  onInvalidateStoryCache?: () => void;
-  storyLoading?: boolean;
-  storyError?: string | null;
-  storiesFetchedAt?: number | null;
-}
 
 export function StoryblokOverlay({
   story,
@@ -151,7 +139,7 @@ export function StoryblokOverlay({
 
       {/* Overlay */}
       <div
-        className="fixed right-0 top-0 bottom-0 w-full max-w-[700px] bg-slate-900 shadow-2xl flex flex-col animate-sb-slide-in"
+        className="fixed right-0 top-0 bottom-0 w-full bg-slate-900 shadow-2xl flex flex-col animate-sb-slide-in"
         style={{ zIndex: 999999 }}
       >
         <StoryblokOverlayHeader
@@ -234,6 +222,9 @@ export function StoryblokOverlay({
                 />
               )}
               {activeTab === "seo" && <SeoTab story={story} />}
+              {activeTab === "relations" && (
+                <RelationsTab story={story} accessToken={accessToken} />
+              )}
               {activeTab === "json" && (
                 <JsonTab
                   story={story}
@@ -258,11 +249,6 @@ export function StoryblokOverlay({
   );
 }
 
-interface StoryblokOverlayAlertsProps {
-  storiesError: string | null;
-  storyError: string | null;
-}
-
 function StoryblokOverlayAlerts({
   storiesError,
   storyError,
@@ -281,13 +267,6 @@ function StoryblokOverlayAlerts({
       )}
     </>
   );
-}
-
-type StoryblokOverlayAlertVariant = "error" | "warning";
-
-interface StoryblokOverlayAlertProps {
-  variant: StoryblokOverlayAlertVariant;
-  message: string;
 }
 
 function StoryblokOverlayAlert({

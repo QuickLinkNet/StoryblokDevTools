@@ -8,22 +8,12 @@ import {
   useState,
 } from "react";
 import { ChevronDown, Loader2 } from "lucide-react";
+import type {
+  StorySelectorOption,
+  StorySelectorProps,
+} from "./types";
 
-export interface StorySelectorOption {
-  id: number;
-  name: string;
-  uuid: string;
-  fullSlug: string;
-}
-
-interface StorySelectorProps {
-  options: StorySelectorOption[];
-  selectedSlug: string;
-  onSelect: (slug: string) => void;
-  disabled?: boolean;
-  loading?: boolean;
-  updatedAt?: number | null;
-}
+export type { StorySelectorOption, StorySelectorProps } from "./types";
 
 export function StorySelector({
   options,
