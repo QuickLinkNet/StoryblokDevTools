@@ -1,20 +1,17 @@
 "use client";
 
-import { Image, Video, File, Download, Copy, ExternalLink, Hash, Search } from "lucide-react";
-import {useEffect, useState} from "react";
-
-interface Asset {
-  type: "image" | "video" | "file";
-  url: string;
-  filename?: string;
-  alt?: string;
-  title?: string;
-  name?: string;
-  id?: string | number;
-  copyright?: string;
-  fieldtype?: string;
-  isExternal?: boolean;
-}
+import {
+  Image,
+  Video,
+  File,
+  Download,
+  Copy,
+  ExternalLink,
+  Hash,
+  Search,
+} from "lucide-react";
+import { useEffect, useState } from "react";
+import type { Asset } from "../types";
 
 export function AssetsTab({ story, onCopy, copiedText }: any) {
   const [filter, setFilter] = useState<"all" | "image" | "video" | "file">("all");
